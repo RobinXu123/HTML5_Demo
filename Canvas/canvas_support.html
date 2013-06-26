@@ -57,7 +57,7 @@
 			context.closePath();
 		}
 		
-		function drawTrails() {
+		function drawTrails(bark) {
 			var canvas = document.getElementById("trails");
 			var context = canvas.getContext("2d");
 			
@@ -73,13 +73,43 @@
 			context.fill();
 			
 			context.fillStyle = "#663300";
-			context.fillRect(-5, -50, 10, 50);
+			context.drawImage(bark, -5, -50, 10, 50);
+			//context.fillRect(-5, -50, 10, 50);
 			
 			context.stroke();
 			//context.fill();
 			context.restore();
 		}
-		window.addEventListener("load", drawTrails, true);
+		
+		function drawCurve() {
+			var canvas = document.getElementById("trails");
+			var context = canvas.getContext("2d");
+			context.save();
+			
+			context.translate(-10, 350);
+			context.beginPath();
+			
+			context.moveTo(0, 0);
+			context.quadraticCurveTo(170, -50, 260, -190);
+			
+			context.quadraticCurveTo(310, -250, 410, -250);
+			
+			context.strokeStyle = "#663300";
+			context.lineWidth = 20;
+			context.stroke();
+			context.restore();
+		}
+		
+		function drawBark() {
+			var bark = new Image();
+			bark.src = "bark.jpg";
+			bark.onload = function() {
+				drawTrails(this);
+			};
+			
+		}
+		window.addEventListener("load", drawBark, true);
+		window.addEventListener("load", drawCurve, true);
 	</script>
 </body>
 </html>

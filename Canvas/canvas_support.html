@@ -7,109 +7,178 @@
 
 <body>
     <p id="support"></p>
-    <canvas id="trails" style="border:1px solid;" width="500" height="500"></canvas>
-    <canvas id="diagonal" style="border:1px solid;" width="200" height="200"></canvas>
+    <canvas id="trails" style="border:1px solid;" width="400" height="600">
+    	HTML5 Canvas is not supported in your browser.
+    </canvas>
     
-    <script type="text/javascript">
-		function canvasSupport() {
-			try {
-				document.createElement("canvas").getContext("2d");
-				document.getElementById("support").innerHTML = "HTML5 Canvas is supported in your browser.";
-			} catch (e) {
-				document.getElementById("support").innerHTML = "HTML5 Canvas is not supported in your browser.";
+    <script>
+		var canvas = document.getElementById('trails');
+		// 雨天纹理动画效果 创建一个image对象
+		var rain = new Image();
+		rain.src = "rain.png";
+		rain.onload = function() {
+			// 从单帧请求开始创建动画
+			// rain变量加载完成后执行
+			window.requestAnimFrame(loopAnimation, canvas);
+		}
+		
+		var gravel = new Image();
+        gravel.src = "gravel.jpg";
+
+        function createCanopyPath(context) {
+            context.beginPath();
+            context.moveTo(-25, -50);
+            context.lineTo(-10, -80);
+            context.lineTo(-20, -80);
+            context.lineTo(-5, -110);
+            context.lineTo(-15, -110);
+
+            context.lineTo(0, -140);
+
+            context.lineTo(15, -110);
+            context.lineTo(5, -110);
+            context.lineTo(20, -80);
+            context.lineTo(10, -80);
+            context.lineTo(25, -50);
+            context.closePath();
+        }
+
+        function drawTree(context) {
+            context.save();
+            context.transform(1, 0, -0.5, 1, 0, 0);
+            context.scale(1, 0.6);
+            context.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            context.fillRect(-5, -50, 10, 50);
+            createCanopyPath(context);
+            context.fill();
+            context.restore();
+
+            var trunkGradient = context.createLinearGradient(-5, -50, 5, -50);
+            trunkGradient.addColorStop(0, '#663300');
+            trunkGradient.addColorStop(0.4, '#996600');
+            trunkGradient.addColorStop(1, '#552200');
+            context.fillStyle = trunkGradient;
+            context.fillRect(-5, -50, 10, 50);
+
+            var canopyShadow = context.createLinearGradient(0, -50, 0, 0);
+            canopyShadow.addColorStop(0, 'rgba(0, 0, 0, 0.5)');
+            canopyShadow.addColorStop(0.2, 'rgba(0, 0, 0, 0.0)');
+            context.fillStyle = canopyShadow;
+            context.fillRect(-5, -50, 10, 50);
+
+            createCanopyPath(context);
+
+            context.lineWidth = 4;
+            context.lineJoin = 'round';
+            context.strokeStyle = '#663300';
+            context.stroke();
+
+            context.fillStyle = '#339900';
+            context.fill();
+        }
+
+
+        function drawTrails() {
+            var context = canvas.getContext('2d');
+
+            context.save();
+            context.translate(130, 250);
+            drawTree(context);
+            context.restore();
+
+            context.save();
+            context.translate(260, 500);
+
+            context.scale(2, 2);
+            drawTree(context);
+            context.restore();
+
+            context.save();
+            context.translate(-10, 350);
+            context.beginPath();
+            context.moveTo(0, 0);
+            context.quadraticCurveTo(170, -50, 260, -190);
+            context.quadraticCurveTo(310, -250, 410,-250);
+            context.strokeStyle = context.createPattern(gravel, 'repeat');
+            context.lineWidth = 20;
+            context.stroke();
+            context.restore();
+
+            context.save();
+            context.font = "60px impact";
+            context.textAlign = 'center';
+            context.fillStyle = '#996600';
+            context.fillText('Happy Trails!', 200, 60, 400);
+            context.restore();
+        }
+		
+		// 将针对不同浏览器的该函数的不同版本以别名的方式合并成单个函数，
+		// 合并后的函数可以兼容所有浏览器
+		window.requestAnimFrame = (function() {
+			return window.requestAnimFrame				||
+				   window.webkitRequestAnimationFrame	||
+				   window.mozRequestAnimationFrame		||
+				   window.oRequestAnimationFrame		||
+				   window.msRequestAnimationFrame		||
+				   function(callback, element) {
+					   window.setTimeout(callback, 1000 / 60);
+				   };
+		})();
+		
+		// 我们会在下面的这个函数中更新Canvas的内容
+		function drawAFrame() {
+			var context = canvas.getContext("2d");
+			
+			// 用经过的时间知道画面变化
+			// 在Canvas上进行绘制，以表示变化
+			context.save();
+			
+			// 先绘出已经存在的跑道图片
+			drawTrails();
+			
+			// 将Canvas变暗以示阴沉的天空
+			// 让天色大部分时间阴沉，创建出闪电的动画效果
+			if (Math.random() > .01) {
+				context.globalAlpha = 0.65;
+				context.fillStyle = "#000000";
+				context.fillRect(0, 0, 400, 600);
+				context.globalAlpha = 1.0;
 			}
-		}
-		
-		function drawDiagonal() {
-			var canvas = document.getElementById("diagonal");
-			var context = canvas.getContext("2d");
 			
+			// 然后根据当前时间进行调整，绘制雨天图像
+			var now = Date.now();
+			context.fillStyle = context.createPattern(rain, 'repeat');
+			
+			// 我们将以不同的比率绘制两张变换过的雨天图像来展示暴雨和大雪
+			// 填充的矩形会比Canvas展示区域的尺寸大，并且基于时间进行重新定位
 			context.save();
+			context.translate(-256 + (0.1 * now) % 256, -256 + (0.5 * now) % 256);
+			context.fillRect(0, 0, 400 + 256, 600 + 256);
+			context.restore();
 			
-			context.translate(70, 140);
+			// 第二个矩形以不同的比率进行
+			// 变换以展示暴雨
+			context.save();
+			context.translate(-256 + (0.08 * now) % 256, -256 + (0.2 * now) % 256);
+			context.fillRect(0, 0, 400 + 256, 600 + 256);
+			context.restore();
 			
-			context.beginPath();
-			context.moveTo(0, 0);
-			context.lineTo(70, -70);
-			
-			context.stroke();
-			
+			// 绘制说明文本
+			context.font = "32px san-serif";
+			context.textAlign = "center";
+			context.fillStyle = "#990000";
+			context.fillText("Event canceled due to weather!", 200, 550, 400);
 			context.restore();
 		}
 		
-		function createCanopyPath(context) {
-			context.beginPath();
-			
-			context.moveTo(-25, -50);
-			context.lineTo(-10, -80);
-			context.lineTo(-20, -80);
-			context.lineTo(-5, -110);
-			context.lineTo(-15, -110);
-			
-			context.lineTo(0, -140);
-			
-			context.lineTo(15, -110);
-			context.lineTo(5, -110);
-			context.lineTo(20, -80);
-			context.lineTo(10, -80);
-			context.lineTo(25, -50);
-			
-			context.closePath();
+		// 当浏览器准备好为我们的应用呈现另一帧是，该函数会被调用
+		function loopAnimation(currentTime) {
+			// 在Canvas上绘制动画的一帧
+			drawAFrame();
+			// 当前帧绘制完成后，让浏览器安排下一帧何时显示
+			window.requestAnimFrame(loopAnimation, canvas);
 		}
 		
-		function drawTrails(bark) {
-			var canvas = document.getElementById("trails");
-			var context = canvas.getContext("2d");
-			
-			context.save();
-			context.translate(130, 250);
-			createCanopyPath(context);
-			
-			context.lineWidth = 4;
-			context.linJoin = "round";
-			context.strokeStyle = "#663300";
-			
-			context.fillStyle = "#339900";
-			context.fill();
-			
-			context.fillStyle = "#663300";
-			context.drawImage(bark, -5, -50, 10, 50);
-			//context.fillRect(-5, -50, 10, 50);
-			
-			context.stroke();
-			//context.fill();
-			context.restore();
-		}
-		
-		function drawCurve() {
-			var canvas = document.getElementById("trails");
-			var context = canvas.getContext("2d");
-			context.save();
-			
-			context.translate(-10, 350);
-			context.beginPath();
-			
-			context.moveTo(0, 0);
-			context.quadraticCurveTo(170, -50, 260, -190);
-			
-			context.quadraticCurveTo(310, -250, 410, -250);
-			
-			context.strokeStyle = "#663300";
-			context.lineWidth = 20;
-			context.stroke();
-			context.restore();
-		}
-		
-		function drawBark() {
-			var bark = new Image();
-			bark.src = "bark.jpg";
-			bark.onload = function() {
-				drawTrails(this);
-			};
-			
-		}
-		window.addEventListener("load", drawBark, true);
-		window.addEventListener("load", drawCurve, true);
-	</script>
+  </script>
 </body>
 </html>

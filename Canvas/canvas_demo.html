@@ -1,29 +1,23 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>无标题文档</title>
+<meta charset="utf-8">
+<title>Canvas Demo</title>
 </head>
 
 <body>
-    <p id="support"></p>
     <canvas id="trails" style="border:1px solid;" width="400" height="600">
     	HTML5 Canvas is not supported in your browser.
     </canvas>
     
     <script>
 		var canvas = document.getElementById('trails');
-		// 雨天纹理动画效果 创建一个image对象
-		var rain = new Image();
-		rain.src = "rain.png";
-		rain.onload = function() {
-			// 从单帧请求开始创建动画
-			// rain变量加载完成后执行
-			window.requestAnimFrame(loopAnimation, canvas);
-		}
 		
 		var gravel = new Image();
         gravel.src = "gravel.jpg";
+		gravel.onload = function () {
+            drawTrails();
+        }
 
         function createCanopyPath(context) {
             context.beginPath();
@@ -79,9 +73,12 @@
 
 
         function drawTrails() {
-            var context = canvas.getContext('2d');
+           var context = canvas.getContext('2d');
 
             context.save();
+
+            context.clearRect(0, 0, 400, 600);
+
             context.translate(130, 250);
             drawTree(context);
             context.restore();
@@ -105,12 +102,21 @@
             context.restore();
 
             context.save();
-            context.font = "60px impact";
+            context.font = "50px impact";
             context.textAlign = 'center';
             context.fillStyle = '#996600';
             context.fillText('Happy Trails!', 200, 60, 400);
             context.restore();
         }
+		
+		// 雨天纹理动画效果 创建一个image对象
+		var rain = new Image();
+		rain.src = "rain.png";
+		rain.onload = function() {
+			// 从单帧请求开始创建动画
+			// rain变量加载完成后执行
+			window.requestAnimFrame(loopAnimation, canvas);
+		}
 		
 		// 将针对不同浏览器的该函数的不同版本以别名的方式合并成单个函数，
 		// 合并后的函数可以兼容所有浏览器
@@ -138,7 +144,7 @@
 			
 			// 将Canvas变暗以示阴沉的天空
 			// 让天色大部分时间阴沉，创建出闪电的动画效果
-			if (Math.random() > .01) {
+			if (Math.random() > 0.01) {
 				context.globalAlpha = 0.65;
 				context.fillStyle = "#000000";
 				context.fillRect(0, 0, 400, 600);
